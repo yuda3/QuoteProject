@@ -5,26 +5,27 @@ const twitterBtn = document.getElementById('twitter');
 const newQuoteBtn = document.getElementById('new-quote');
 const loader = document.getElementById('loader');
 
-//ロード画面
-function loading(){
+
+function showLoadingSpinner(){
     loader.hidden = false;
     quoteContainer.hidden = true;
 }
 
-//ロード完了
-function complete(){
+
+function removeLoadingSpinner(){
     if(!loader.hidden){
         quoteContainer.hidden = false;
         loader.hidden = true;
     }
 }
-
+let count  = 0;
 // 名言取得
 async function getQuote(){
-    loading();
+    showLoadingSpinner();
     const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
     const apiUrl = 'http://api.forismatic.com/api/1.0/?method=getQuote&lang=en&format=json';
     try{
+        count++;
         const response = await fetch(proxyUrl + apiUrl);
         const data = await response.json();
         //著者がない場合
@@ -40,9 +41,18 @@ async function getQuote(){
         }
         quoteText.innerText = data.quoteText;
         //ロード完了
-        complete();
+        removeLoadingSpinner();
+        throw new Error('Oops');
     }catch (error){
-        await getQuote();
+        if(count < 10) {
+            count++;
+            console.log(count);
+            await getQuote();
+            throw new Error('Break');
+        }else {
+
+            alert('Some Thing is Wrong');
+        }
 
     }
 }
@@ -60,4 +70,4 @@ twitterBtn.addEventListener('click', tweetQuote);
 
 //On Load
 getQuote();
-loading();
+showLoadingSpinner();
